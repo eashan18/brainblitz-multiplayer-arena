@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BrainBlitz | Real-Time Multiplayer Arena</title>
+  <meta name="description" content="Cross-platform real-time multiplayer party arena game built for the Handshake AI Skills Studio challenge in partnership with OpenAI." />
+  
+  <!-- Favicon / Emoji Icon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Top App Navigation Bar -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">⚡</div>
+      <div class="brand-text">
+        <h1>BRAINBLITZ <span class="brand-badge">ARENA</span></h1>
+      </div>
+    </div>
+    <div class="header-controls">
+      <div id="net-status-badge" class="status-badge">
+        <span class="status-dot green"></span> Connecting...
+      </div>
+      <button id="btn-mute-toggle" class="icon-btn" title="Toggle Sound">🔊</button>
+    </div>
+  </header>
+
+  <!-- Main App Shell -->
+  <main class="main-container">
+
+    <!-- VIEW 1: LANDING & LOBBY CREATION/JOIN -->
+    <section id="view-landing" class="view-section active">
+      <div class="glass-card">
+        <div class="hero-tagline">
+          <h2>Ultimate Multiplayer Arena</h2>
+          <p>Compete live with friends across phones and laptops using a simple room code!</p>
+        </div>
+
+        <!-- Player Profile Config -->
+        <div class="profile-setup">
+          <label class="input-label" for="input-player-name">Player Call-sign / Nickname</label>
+          <input type="text" id="input-player-name" class="text-input" placeholder="e.g. Maverick, Nova, Neo" maxlength="16" />
+          
+          <label class="input-label" style="margin-top: 14px;">Select Your Avatar</label>
+          <div class="avatar-grid">
+            <button class="avatar-option selected" data-avatar="🦊">🦊</button>
+            <button class="avatar-option" data-avatar="🤖">🤖</button>
+            <button class="avatar-option" data-avatar="🚀">🚀</button>
+            <button class="avatar-option" data-avatar="🐱">🐱</button>
+            <button class="avatar-option" data-avatar="⚡">⚡</button>
+            <button class="avatar-option" data-avatar="👾">👾</button>
+            <button class="avatar-option" data-avatar="🐯">🐯</button>
+            <button class="avatar-option" data-avatar="🔮">🔮</button>
+          </div>
+        </div>
+
+        <!-- Mode Select: Create vs Join Tabs -->
+        <div class="tabs-header">
+          <button id="tab-create" class="tab-btn active">Create Room</button>
+          <button id="tab-join" class="tab-btn">Join with Code</button>
+        </div>
+
+        <!-- Create Panel -->
+        <div id="panel-create" class="tab-panel">
+          <div class="form-row">
+            <label class="input-label" for="select-game-mode">Challenge Mode</label>
+            <select id="select-game-mode" class="select-input">
+              <option value="mixed">🔥 Mixed Arena (Trivia + Anagram + Reflex)</option>
+              <option value="trivia">🧠 AI & Tech Trivia Blitz</option>
+              <option value="anagram">🔤 Anagram Word Dash</option>
+              <option value="reflex">🎯 Color Reflex Stroop Test</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="input-label" for="select-rounds">Match Length</label>
+            <select id="select-rounds" class="select-input">
+              <option value="3">3 Rounds (Speed Match ~2 mins)</option>
+              <option value="5" selected>5 Rounds (Standard Match ~3 mins)</option>
+              <option value="8">8 Rounds (Championship ~5 mins)</option>
+            </select>
+          </div>
+          <button id="btn-create-room" class="btn-primary">⚡ Create Arena Room</button>
+        </div>
+
+        <!-- Join Panel -->
+        <div id="panel-join" class="tab-panel hidden">
+          <div class="form-row">
+            <label class="input-label" for="input-join-code">4-Letter Room Code</label>
+            <input type="text" id="input-join-code" class="text-input" placeholder="e.g. 7X2P" maxlength="6" style="text-transform: uppercase; font-size: 1.4rem; letter-spacing: 3px; font-weight: bold; text-align: center;" />
+          </div>
+          <button id="btn-join-room" class="btn-primary btn-accent">🚀 Enter Match</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: LOBBY -->
+    <section id="view-lobby" class="view-section">
+      <div class="glass-card">
+        <div class="lobby-header-box">
+          <div>
+            <div class="room-code-tag">Room Passcode</div>
+            <div id="display-room-code" class="room-code-display">----</div>
+          </div>
+          <button id="btn-copy-code" class="btn-secondary">📋 Copy Invite Link</button>
+        </div>
+
+        <div class="lobby-main-split">
+          <!-- Players Area -->
+          <div class="lobby-players-area">
+            <h3 style="font-size: 1rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 12px;">Active Competitors</h3>
+            <div id="lobby-players-grid" class="players-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- QR Scan / Join Mobile -->
+          <div class="lobby-side-card">
+            <div id="qr-container"></div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="lobby-actions-bar">
+          <button id="btn-add-bot" class="btn-secondary" title="Add an automated bot opponent for solo testing">🤖 Add AI Bot</button>
+          <button id="btn-toggle-ready" class="btn-secondary">Ready Up</button>
+          <button id="btn-start-match" class="btn-primary" style="max-width: 240px;">⚡ Start Match</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: COUNTDOWN -->
+    <section id="view-countdown" class="view-section">
+      <div class="countdown-overlay">
+        <div id="countdown-number" class="countdown-number">3</div>
+        <div class="countdown-text">Get Ready to Strike</div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: ACTIVE GAME ARENA -->
+    <section id="view-game" class="view-section">
+      <div class="glass-card">
+        <!-- Top Bar -->
+        <div class="game-top-bar">
+          <div id="game-round-pill" class="game-pill">Round 1 / 5</div>
+          <div id="question-type-badge" class="game-pill" style="color: var(--accent-cyan);">TRIVIA</div>
+        </div>
+
+        <!-- Timer Bar -->
+        <div class="timer-container">
+          <div class="timer-track">
+            <div id="round-timer-progress" class="timer-fill"></div>
+          </div>
+          <div id="round-timer-text" class="timer-number">12s</div>
+        </div>
+
+        <!-- Question Prompt -->
+        <div class="question-box">
+          <div id="game-visual-box" style="display: none;"></div>
+          <div id="game-question-text" class="question-prompt">Question text loading...</div>
+        </div>
+
+        <!-- Answers Grid -->
+        <div id="game-options-grid" class="game-options-grid">
+          <!-- Dynamically populated buttons -->
+        </div>
+
+        <!-- Opponent Live Status Bubbles -->
+        <div id="opponent-bubbles" class="opponent-bubbles">
+          <!-- Populated live -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 5: ROUND SUMMARY -->
+    <section id="view-round-summary" class="view-section">
+      <div class="glass-card">
+        <h2 style="text-align: center; margin-bottom: 16px;">Round Finished!</h2>
+        
+        <div id="summary-answer-reveal"></div>
+
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Player</th>
+              <th>Round Earned</th>
+              <th>Total Score</th>
+              <th>Streak</th>
+            </tr>
+          </thead>
+          <tbody id="round-leaderboard-body"></tbody>
+        </table>
+
+        <p style="text-align: center; color: var(--text-muted); font-size: 0.85rem;">Next round launching automatically in a moment...</p>
+      </div>
+    </section>
+
+    <!-- VIEW 6: MATCH OVER & PODIUM -->
+    <section id="view-game-over" class="view-section">
+      <div class="glass-card">
+        <h2 style="text-align: center; font-size: 2rem;">🏆 Arena Champions 🏆</h2>
+        
+        <!-- Podium -->
+        <div id="podium-winners" class="podium-container"></div>
+
+        <!-- Detailed Match Stats -->
+        <h3 style="font-size: 1rem; color: var(--text-muted); text-transform: uppercase; margin: 24px 0 12px 0;">Match Performance Matrix</h3>
+        <table class="leaderboard-table">
+          <thead>
+            <tr>
+              <th>Pos</th>
+              <th>Player</th>
+              <th>Final Score</th>
+              <th>Accuracy</th>
+              <th>Avg Reflex</th>
+              <th>Max Streak</th>
+            </tr>
+          </thead>
+          <tbody id="final-stats-body"></tbody>
+        </table>
+
+        <div style="display: flex; gap: 12px; margin-top: 24px;">
+          <button id="btn-share-result" class="btn-secondary" style="flex: 1;">📢 Share Match Result</button>
+          <button id="btn-rematch" class="btn-primary" style="flex: 1;">🔄 Play Rematch</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    Crafted for the <strong>Handshake AI Skills Studio</strong> in partnership with <strong>OpenAI</strong>.
+  </footer>
+
+  <!-- Socket.IO Client (Optional Server connection) -->
+  <script src="/socket.io/socket.io.js" onerror="console.log('Static host mode: Socket.io server not detected, using fallback engine')"></script>
+  
+  <!-- Client Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/confetti.js"></script>
+  <script src="js/qr-generator.js"></script>
+  <script src="js/game-modes.js"></script>
+  <script src="js/network.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
